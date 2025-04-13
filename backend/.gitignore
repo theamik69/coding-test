@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+*.pyo
+*.pyd
+*.pdb
+.Python
+env/
+venv/
+ENV/
+.venv/
+pip-log.txt
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# dotenv
+.env
+
+# Logs
+*.log
+
+# MyPy & Pyright
+.mypy_cache/
+.pyright/
+
+# Test coverage
+htmlcov/
+.coverage
+.cache
+
+# Jupyter
+.ipynb_checkpoints/
+
+# LangChain / Gemini output
+*.jsonl
+*.tmp
+*.sqlite
