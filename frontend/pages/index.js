@@ -10,7 +10,7 @@ export default function Home() {
     fetch("http://localhost:8000/api/data")
       .then((res) => res.json())
       .then((data) => {
-        setUsers(data.users || []);
+        setUsers(data || []);
         setLoading(false);
       })
       .catch((err) => {
@@ -34,37 +34,45 @@ export default function Home() {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Next.js + FastAPI Sample</h1>
+    <div className="p-8 max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Sales Dashboard</h1>
 
-      <section style={{ marginBottom: "2rem" }}>
-        <h2>Dummy Data</h2>
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Dummy Data</h2>
         {loading ? (
-          <p>Loading...</p>
+          <p className="text-gray-500">Loading...</p>
         ) : (
-          <ul>
-            {users.map((user) => (
-              <li key={user.id}>
-                {user.name} - {user.role}
-              </li>
-            ))}
-          </ul>
+            <ul>
+              {users.map((user) => (
+                <li key={user.id}>
+                  <strong>{user.name}</strong> - {user.role} ({user.region})<br />
+                  Skills: {user.skills.join(", ")}<br />
+                  Deals Closed: {user.deals.filter(d => d.status === "Closed Won").length}
+                </li>
+              ))}
+            </ul>
         )}
       </section>
 
       <section>
-        <h2>Ask a Question (AI Endpoint)</h2>
-        <div>
+        <h2 className="text-xl font-semibold mb-2">Ask a Question (AI Endpoint)</h2>
+        <div className="flex gap-2 mb-4">
           <input
             type="text"
+            className="border p-2 flex-1 rounded"
             placeholder="Enter your question..."
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
           />
-          <button onClick={handleAskQuestion}>Ask</button>
+          <button
+            onClick={handleAskQuestion}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Ask
+          </button>
         </div>
         {answer && (
-          <div style={{ marginTop: "1rem" }}>
+          <div className="bg-gray-100 p-4 rounded">
             <strong>AI Response:</strong> {answer}
           </div>
         )}
