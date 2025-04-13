@@ -1,13 +1,11 @@
 from fastapi import APIRouter, HTTPException
-import json
+from app.models.sales import SalesRep
+from app.utils import error_handler
 from pathlib import Path
 from typing import List
-from app.models.sales import SalesRep
-import logging
+import json
 
 router = APIRouter()
-
-logging.basicConfig(level=logging.INFO)
 
 file_path = Path(__file__).parent.parent / "dummyData.json"
 
@@ -15,19 +13,15 @@ try:
     with open(file_path, "r") as f:
         raw_data = json.load(f)
         if "salesReps" not in raw_data:
-            raise keyError("'salesReps' key not found in dummyData.json")
+            raise KeyError("'salesReps' key not found")
 except FileNotFoundError:
-    logging.error(f"The file dummyData.json was not found at the specified path: {file_path}")
-    raise HTTPException(status_code=500, detail="Data file not found.")
+    error_handler.handle_file_not_found(str(file_path))
 except json.JSONDecodeError as e:
-    logging.error(f"Failed to read the JSON file: {e}")
-    raise HTTPException(status_code=500, detail="Invalid JSON format.")
+    error_handler.handle_json_decode_error(e)
 except KeyError as e:
-    logging.error(f"Key error occurred while reading the data: {e}")
-    raise HTTPException(status_code=500, detail=str(e))
+    error_handler.handle_key_error(e)
 except Exception as e:
-    logging.error(f"Unexpected error occurred while loading the data: {e}")
-    raise HTTPException(status_code=500, detail="Internal server error occurred while loading the data.")
+    error_handler.handle_generic_error(e)
 
 @router.get("/data", response_model=List[SalesRep], tags=["Data"])
 def get_data():

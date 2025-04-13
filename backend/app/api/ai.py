@@ -3,19 +3,29 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from app.models.ai import AIRequest
-import json
+from app.utils import error_handler
 from pathlib import Path
 from dotenv import load_dotenv
+import json
 import os
-import logging
 
 load_dotenv()
 router = APIRouter()
-logging.basicConfig(level=logging.INFO)
 
 file_path = Path(__file__).parent.parent / "dummyData.json"
-with open(file_path, "r") as f:
-    data_json = json.load(f)
+
+try:
+    with open(file_path, "r") as f:
+        data_json = json.load(f)
+        context = json.dumps(data_json["salesReps"], indent=2)
+except FileNotFoundError:
+    error_handler.handle_file_not_found(str(file_path))
+except json.JSONDecodeError as e:
+    error_handler.handle_json_decode_error(e)
+except KeyError as e:
+    error_handler.handle_key_error(e)
+except Exception as e:
+    error_handler.handle_generic_error(e)
 
 context = json.dumps(data_json["salesReps"], indent=2)
 
@@ -39,18 +49,17 @@ User Question:
 Answer:"""
 )
 
-chain = LLMChain(llm=llm, prompt=prompt)
+chain = prompt | llm
 
 @router.post("/ai", tags=["AI"])
 async def ai_endpoint(body: AIRequest):
-    question = body.question
+    question = body.question.strip()
 
     if not question:
-        raise HTTPException(status_code=400, detail="The question cannot be empty")
+        raise HTTPException(status_code=400, detail="The question cannot be empty.")
 
     try:
-        result = chain.run(context=context, question=question)
-        return {"answer": result}
+        result = chain.invoke({"context": context, "question": question})
+        return {"answer": result.content if hasattr(result, "content") else str(result)}
     except Exception as e:
-        logging.error(f"AI processing failed: {e}")
-        raise HTTPException(status_code=500, detail="Failed to process the AI request. Please try again later.")
+        error_handler.handle_ai_processing_error(e)
