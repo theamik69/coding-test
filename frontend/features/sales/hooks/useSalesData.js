@@ -5,15 +5,28 @@ export default function useSalesData() {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [region, setRegion] = useState("All");
   const [sortBy, setSortBy] = useState("name");
 
   useEffect(() => {
-    getSalesData().then((data) => {
-      setUsers(data);
+    const fetchData = async () => {
+      setLoading(true);
+      const response = await getSalesData();
+
+      if (response.success) {
+        setUsers(response.data);
+        setError(null);
+      } else {
+        setError(response.error);
+        setUsers([]);
+      }
+
       setLoading(false);
-    });
+    };
+
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -44,6 +57,7 @@ export default function useSalesData() {
     users,
     filteredUsers,
     loading,
+    error,
     search,
     setSearch,
     region,
